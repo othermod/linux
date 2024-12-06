@@ -27,6 +27,11 @@
 
 /* ---------------------------------------------------------------------- */
 
+#define DPI_ORDER_RGB  0
+#define DPI_ORDER_BGR  1
+#define DPI_ORDER_GRB  2
+#define DPI_ORDER_BRG  3
+
 struct rp1_dpi {
 	/* DRM base and platform device pointer */
 	struct drm_device drm;
@@ -46,6 +51,9 @@ struct rp1_dpi {
 	bool de_inv, clk_inv;
 	bool dpi_running, pipe_enabled;
 	struct completion finished;
+    
+    /* RGB order override from device tree */
+    int rgb_order_override;
 };
 
 /* ---------------------------------------------------------------------- */
