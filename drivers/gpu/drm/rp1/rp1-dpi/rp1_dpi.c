@@ -299,6 +299,24 @@ static int rp1dpi_platform_probe(struct platform_device *pdev)
 	dpi->bus_fmt = default_bus_fmt;
 	ret = of_property_read_u32(dev->of_node, "default_bus_fmt", &dpi->bus_fmt);
 
+    /* Initialize RGB order override */
+    dpi->rgb_order_override = -1;
+    {
+        const char *rgb_order;
+        if (!of_property_read_string(dev->of_node, "rgb_order", &rgb_order)) {
+            if (!strcmp(rgb_order, "rgb"))
+                dpi->rgb_order_override = DPI_ORDER_RGB;
+            else if (!strcmp(rgb_order, "bgr"))
+                dpi->rgb_order_override = DPI_ORDER_BGR;
+            else if (!strcmp(rgb_order, "grb"))
+                dpi->rgb_order_override = DPI_ORDER_GRB;
+            else if (!strcmp(rgb_order, "brg"))
+                dpi->rgb_order_override = DPI_ORDER_BRG;
+            else
+                dev_err(dev, "Invalid rgb_order value: %s\n", rgb_order);
+        }
+    }
+
 	for (i = 0; i < RP1DPI_NUM_HW_BLOCKS; i++) {
 		dpi->hw_base[i] =
 			devm_ioremap_resource(dev,
