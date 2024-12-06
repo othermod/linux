@@ -398,9 +398,31 @@ void rp1dpi_hw_setup(struct rp1_dpi *dpi,
 		pr_err("%s: bad input format\n", __func__);
 		i = 4;
 	}
-	if (BUS_FMT_IS_BGR(bus_format))
-		i ^= 1;
+	 /* Get base format values */
+
 	shift = my_formats[i].shift;
+
+    /* Apply the RGB order override if set */
+    if (dpi->rgb_order_override >= 0) {
+        /* Extract the original shift values */
+        u32 r_shift = (shift >> DPI_DMA_SHIFT_IR_SHIFT) & 0x1F;
+        u32 g_shift = (shift >> DPI_DMA_SHIFT_IG_SHIFT) & 0x1F;
+        u32 b_shift = (shift >> DPI_DMA_SHIFT_IB_SHIFT) & 0x1F;
+        
+        /* Reorder based on override */
+        switch (dpi->rgb_order_override) {
+        case DPI_ORDER_BGR:
+            shift = ISHIFT_RGB(b_shift, g_shift, r_shift);
+            break;
+        case DPI_ORDER_GRB:
+            shift = ISHIFT_RGB(g_shift, r_shift, b_shift);
+            break;
+        case DPI_ORDER_BRG:
+            shift = ISHIFT_RGB(b_shift, r_shift, g_shift);
+            break;
+        }
+    }
+
 	imask = my_formats[i].mask;
 	rgbsz = my_formats[i].rgbsz;
 	omask = set_output_format(bus_format, &shift, &imask, &rgbsz);
